@@ -64,6 +64,7 @@ const images = [
   },
 ];
 
+let handleKeyPress;
 const galleryContainer = document.querySelector(".gallery");
 galleryContainer.innerHTML = images.reduce(
   (html, image) =>
@@ -88,63 +89,39 @@ galleryContainer.innerHTML = images.reduce(
 
 galleryContainer.addEventListener("click", (event) => {
   event.preventDefault();
-  const imageOriginalLink = event.target.closest(".gallery-link");
+  const imageOriginalLink = event.target.dataset.source;
+
   if (imageOriginalLink) {
-    const originalImg = imageOriginalLink.href;
+    const originalImg = imageOriginalLink;
     console.log(originalImg);
 
-    const modal = basicLightbox.create(`
+    const modal = basicLightbox.create(
+      `
     <img src="${originalImg}">
-`);
-    modal.show();
+`,
+      {
+        onShow: (instance) => {
+          const handleKeyPress = (event) => {
+            if (event.key === "Escape") {
+              instance.close();
+            }
+          };
 
-    document.addEventListener("keydown", handleKeyPress);
+          document.addEventListener("keydown", handleKeyPress);
 
-    function handleKeyPress(event) {
-      if (event.key === "Escape") {
-        modal.close();
-
-        document.removeEventListener("keydown", handleKeyPress);
+          instance.element().addEventListener("click", (event) => {
+            if (event.target.tagName === "IMG") {
+              return;
+            }
+            instance.close();
+          });
+        },
+        onClose: (instance) => {
+          document.removeEventListener("keydown", handleKeyPress);
+        },
       }
-    }
+    );
+
+    modal.show();
   }
 });
-
-//   const modal = basiclightbox.create();
-//   modal.show();
-// };
-
-// galleryContainer.addEventListener("click", handleGalleryClick);
-
-// const createGalleryItem = (image) => {
-//   const galleryItem = document.createElement("li");
-//   galleryItem.classList.add("gallery-item");
-
-//   const galleryLink = document.createElement("a");
-//   galleryLink.classList.add("gallery-link");
-//   galleryLink.href = image.original;
-
-//   const galleryImage = document.createElement("img");
-//   galleryImage.classList.add("gallery-image");
-//   galleryImage.src = image.preview;
-//   galleryImage.alt = image.description;
-//   galleryImage.dataset.source = image.original;
-
-//   galleryLink.appendChild(galleryImage);
-//   galleryItem.appendChild(galleryLink);
-
-//   return galleryItem;
-// };
-
-// const appendGalleryItems = () => {
-//   const galleryFragment = document.createDocumentFragment();
-
-//   images.forEach((image) => {
-//     const galleryItem = createGalleryItem(image);
-//     galleryFragment.appendChild(galleryItem);
-//   });
-
-//   galleryContainer.appendChild(galleryFragment);
-// };
-
-// appendGalleryItems();
